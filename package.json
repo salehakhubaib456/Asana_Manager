@@ -11,6 +11,7 @@
     "db:schema": "node scripts/run-schema-pm.mjs"
   },
   "dependencies": {
+    "bcryptjs": "^2.4.3",
     "mysql2": "^3.11.0",
     "next": "14.2.18",
     "react": "^18.3.1",
@@ -18,6 +19,7 @@
     "zustand": "^4.5.5"
   },
   "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
     "@types/node": "^20.17.6",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",

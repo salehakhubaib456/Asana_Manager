@@ -23,6 +23,7 @@ export default function LoginPage() {
     try {
       const res = await authService.login({ email, password });
       authService.persistToken(res.token);
+      authService.persistUser(res.user);
       setAuth(res.user, res.token);
       router.push(ROUTES.DASHBOARD);
     } catch (err) {

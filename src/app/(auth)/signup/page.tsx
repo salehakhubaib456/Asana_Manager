@@ -24,6 +24,7 @@ export default function SignupPage() {
     try {
       const res = await authService.signup({ email, password, name: name || undefined });
       authService.persistToken(res.token);
+      authService.persistUser(res.user);
       setAuth(res.user, res.token);
       router.push(ROUTES.DASHBOARD);
     } catch (err) {

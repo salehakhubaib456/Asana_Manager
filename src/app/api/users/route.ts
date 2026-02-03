@@ -5,7 +5,7 @@ import type { RowDataPacket } from "mysql2";
 export async function GET() {
   try {
     const [rows] = await pool.query<RowDataPacket[]>(
-      "SELECT id, email, name, createdAt, updatedAt FROM users ORDER BY createdAt DESC"
+      "SELECT id, email, name, avatar_url, created_at, updated_at FROM users ORDER BY created_at DESC"
     );
     return NextResponse.json(rows);
   } catch (e) {
@@ -28,14 +28,15 @@ export async function POST(request: NextRequest) {
     }
     const [result] = await pool.query<RowDataPacket>(
       "INSERT INTO users (email, name) VALUES (?, ?)",
-      [email.trim(), name?.trim() || null]
+      [email.trim(), name?.trim() ?? null]
     );
     const insertId = (result as { insertId?: number })?.insertId;
     const [rows] = await pool.query<RowDataPacket[]>(
-      "SELECT id, email, name, createdAt, updatedAt FROM users WHERE id = ?",
+      "SELECT id, email, name, avatar_url, created_at, updated_at FROM users WHERE id = ?",
       [insertId]
     );
-    return NextResponse.json(rows[0] ?? { id: insertId, email: email.trim(), name: name?.trim() ?? null });
+    const u = rows[0];
+    return NextResponse.json(u ? { ...u, created_at: u.created_at?.toString(), updated_at: u.updated_at?.toString() } : { id: insertId, email: email.trim(), name: name?.trim() ?? null });
   } catch (e) {
     return NextResponse.json(
       { error: "Failed to create user", details: String(e) },

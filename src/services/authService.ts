@@ -30,6 +30,9 @@ export const authService = {
   persistToken: (token: string) => {
     if (typeof window !== "undefined") localStorage.setItem(STORAGE_KEYS.TOKEN, token);
   },
+  persistUser: (user: User) => {
+    if (typeof window !== "undefined") localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user));
+  },
   clearToken: () => {
     if (typeof window !== "undefined") {
       localStorage.removeItem(STORAGE_KEYS.TOKEN);
