@@ -10,6 +10,10 @@ const nextConfig = {
   experimental: {
     serverComponentsExternalPackages: ["mysql2"],
   },
+  // Workaround for Vercel build issue with route groups
+  generateBuildId: async () => {
+    return `build-${Date.now()}`;
+  },
 };
 
 module.exports = nextConfig;
