@@ -1,4 +1,10 @@
-import { Sidebar } from "@/components/layout";
+"use client";
+
+import dynamic from "next/dynamic";
+
+const Sidebar = dynamic(() => import("@/components/layout").then(mod => ({ default: mod.Sidebar })), {
+  ssr: false,
+});
 
 export default function DashboardLayout({
   children,
