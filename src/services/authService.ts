@@ -48,16 +48,16 @@ export const authService = {
     apiPost<{ message: string }>(API_ROUTES.AUTH.RESET_PASSWORD, payload),
 
   persistToken: (token: string) => {
-    if (typeof window !== "undefined") localStorage.setItem(STORAGE_KEYS.TOKEN, token);
+    if (typeof window !== "undefined") sessionStorage.setItem(STORAGE_KEYS.TOKEN, token);
   },
   persistUser: (user: User) => {
-    if (typeof window !== "undefined") localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user));
+    if (typeof window !== "undefined") sessionStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(user));
   },
   clearToken: () => {
     if (typeof window !== "undefined") {
-      localStorage.removeItem(STORAGE_KEYS.TOKEN);
-      localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
-      localStorage.removeItem(STORAGE_KEYS.USER);
+      sessionStorage.removeItem(STORAGE_KEYS.TOKEN);
+      sessionStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
+      sessionStorage.removeItem(STORAGE_KEYS.USER);
     }
   },
 };

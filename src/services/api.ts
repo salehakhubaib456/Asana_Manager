@@ -7,7 +7,7 @@ import type { ApiError } from "@/types";
 
 const getToken = (): string | null => {
   if (typeof window === "undefined") return null;
-  return localStorage.getItem(STORAGE_KEYS.TOKEN);
+  return sessionStorage.getItem(STORAGE_KEYS.TOKEN);
 };
 
 export async function api<T>(
