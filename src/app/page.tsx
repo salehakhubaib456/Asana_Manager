@@ -1,29 +1,15 @@
-import Link from "next/link";
-import { ROUTES } from "@/constants";
-import { Button } from "@/components/ui";
+import { LandingContent } from "@/components/features/LandingContent";
 
 export default function Home() {
   return (
-    <main className="max-w-3xl mx-auto px-4 py-12">
-      <h1 className="text-3xl font-bold text-gray-900">Asanamanager</h1>
-      <p className="mt-4 text-gray-600">
-        Next.js + MySQL + TypeScript. Project management with state management (Zustand).
-      </p>
-      <div className="mt-6 flex gap-4">
-        <Link href={ROUTES.LOGIN}>
-          <Button variant="secondary">Login</Button>
-        </Link>
-        <Link href={ROUTES.SIGNUP}>
-          <Button variant="primary">Sign up</Button>
-        </Link>
-        <Link href={ROUTES.DASHBOARD}>
-          <Button variant="ghost">Dashboard</Button>
-        </Link>
+    <main className="min-h-screen bg-gradient-to-b from-[#e8d5f2] via-[#d4c8f0] to-[#c5d8f5] relative overflow-hidden">
+      {/* Background shapes */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-[10%] right-[15%] w-32 h-32 bg-blue-400/20 rounded-2xl rotate-12 blur-sm" />
+        <div className="absolute bottom-[20%] left-[10%] w-40 h-40 border-[20px] border-indigo-300/20 rounded-full blur-sm" />
+        <div className="absolute top-[50%] left-[5%] w-20 h-32 bg-violet-300/20 rounded-full blur-sm rotate-[-15deg]" />
       </div>
-      <p className="mt-8 text-sm text-gray-500">
-        API: <a href="/api/health" className="text-blue-600 hover:underline">/api/health</a>
-        {" "}| <a href="/api/users" className="text-blue-600 hover:underline">/api/users</a>
-      </p>
+      <LandingContent />
     </main>
   );
 }

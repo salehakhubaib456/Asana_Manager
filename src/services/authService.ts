@@ -10,7 +10,19 @@ export interface LoginPayload {
 export interface SignupPayload {
   email: string;
   password: string;
+  firstName?: string;
+  lastName?: string;
   name?: string;
+}
+
+export interface ForgotPasswordPayload {
+  email: string;
+}
+
+export interface ResetPasswordPayload {
+  email: string;
+  otp: string;
+  newPassword: string;
 }
 
 export interface AuthResponse {
@@ -26,6 +38,14 @@ export const authService = {
     apiPost<AuthResponse>(API_ROUTES.AUTH.SIGNUP, payload),
   me: () => apiGet<User>(API_ROUTES.AUTH.ME),
   logout: () => apiPost<{ ok: boolean }>(API_ROUTES.AUTH.LOGOUT, {}),
+  loginWithGoogle: (access_token: string) =>
+    apiPost<AuthResponse>(API_ROUTES.AUTH.GOOGLE, { access_token }),
+  forgotPassword: (payload: ForgotPasswordPayload) =>
+    apiPost<{ message: string }>(API_ROUTES.AUTH.FORGOT_PASSWORD, payload),
+  verifyResetOtp: (payload: { email: string; otp: string }) =>
+    apiPost<{ ok: boolean }>(API_ROUTES.AUTH.VERIFY_RESET_OTP, payload),
+  resetPassword: (payload: ResetPasswordPayload) =>
+    apiPost<{ message: string }>(API_ROUTES.AUTH.RESET_PASSWORD, payload),
 
   persistToken: (token: string) => {
     if (typeof window !== "undefined") localStorage.setItem(STORAGE_KEYS.TOKEN, token);

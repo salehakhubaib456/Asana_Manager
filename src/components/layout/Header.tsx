@@ -1,15 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { ROUTES } from "@/constants";
 import { useAuthStore } from "@/store";
 import { authService } from "@/services/authService";
 import { Button } from "@/components/ui";
 
+const AUTH_PATHS = [ROUTES.LOGIN, ROUTES.SIGNUP, ROUTES.FORGOT_PASSWORD];
+
 export function Header() {
   const router = useRouter();
+  const pathname = usePathname();
   const { user, logout } = useAuthStore();
+  const isAuthPage = AUTH_PATHS.includes(pathname);
 
   async function handleLogout() {
     try {
@@ -22,30 +26,37 @@ export function Header() {
   }
 
   return (
-    <header className="h-14 border-b border-gray-200 bg-white flex items-center justify-between px-4">
-      <Link href={ROUTES.HOME} className="font-semibold text-gray-900">
+    <header className="h-16 border-b border-white/30 bg-white/50 backdrop-blur-md flex items-center justify-between px-6 shadow-sm">
+      <Link href={ROUTES.HOME} className="text-xl font-bold tracking-tight text-slate-800 hover:text-violet-700 transition-colors">
         Asanamanager
       </Link>
-      <nav className="flex items-center gap-4">
+      <nav className="flex items-center gap-5">
         {user ? (
           <>
-            <Link href={ROUTES.DASHBOARD} className="text-sm text-gray-600 hover:text-gray-900">
+            <Link href={ROUTES.DASHBOARD} className="text-sm font-medium text-slate-600 hover:text-violet-700 transition-colors">
               Dashboard
             </Link>
-            <span className="text-sm text-gray-500">{user.email}</span>
-            <Button variant="ghost" size="sm" onClick={handleLogout}>
+            <span className="text-sm text-slate-500 max-w-[160px] truncate">{user.email}</span>
+            <Button variant="ghost" size="sm" onClick={handleLogout} className="text-slate-600 hover:text-slate-900 hover:bg-white/60 rounded-lg">
               Logout
             </Button>
           </>
+        ) : isAuthPage ? (
+          <Link
+            href={ROUTES.HOME}
+            className="inline-flex items-center gap-1.5 rounded-xl px-4 py-2.5 text-sm font-semibold text-violet-700 bg-violet-100 hover:bg-violet-200 border border-violet-200 shadow-sm hover:shadow-md transition-all"
+          >
+            ← Back
+          </Link>
         ) : (
           <>
             <Link href={ROUTES.LOGIN}>
-              <Button variant="ghost" size="sm">
+              <Button variant="ghost" size="sm" className="text-slate-700 hover:text-violet-700 hover:bg-white/60 rounded-lg">
                 Login
               </Button>
             </Link>
             <Link href={ROUTES.SIGNUP}>
-              <Button variant="primary" size="sm">
+              <Button variant="primary" size="sm" className="rounded-lg bg-slate-800 hover:bg-slate-900 text-white">
                 Sign up
               </Button>
             </Link>

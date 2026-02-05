@@ -3,12 +3,13 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -p 3000",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
     "db:init": "node scripts/init-and-test-db.mjs",
-    "db:schema": "node scripts/run-schema-pm.mjs"
+    "db:schema": "node scripts/run-schema-pm.mjs",
+    "db:migrate-auth": "node scripts/run-migrate-auth.mjs"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -16,6 +17,7 @@
     "next": "14.2.18",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "resend": "^4.8.0",
     "zustand": "^4.5.5"
   },
   "devDependencies": {

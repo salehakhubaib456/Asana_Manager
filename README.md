@@ -46,6 +46,11 @@ Next.js application with **MySQL** database (direct **mysql2**) and **TypeScript
 
 Open [http://localhost:3000](http://localhost:3000).
 
+### Auth (optional)
+
+- **Google Sign-In:** Add `NEXT_PUBLIC_GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_ID` (from [Google Cloud Console](https://console.cloud.google.com/apis/credentials)) to `.env`.
+- **Forgot password (OTP email):** Add `RESEND_API_KEY` and optionally `RESEND_FROM` to `.env` so OTP is sent by email. Without it, OTP is logged to the server console for testing.
+
 ## Scripts
 
 | Command | Description |

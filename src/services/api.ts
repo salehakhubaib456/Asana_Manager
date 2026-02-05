@@ -29,8 +29,11 @@ export async function api<T>(
   const data = await res.json().catch(() => ({}));
 
   if (!res.ok) {
-    const err = (data as ApiError)?.error ?? res.statusText;
-    throw new Error(typeof err === "string" ? err : "Request failed");
+    const d = data as ApiError & { details?: string; emailRegistered?: boolean };
+    const errMsg = d?.details ?? d?.error ?? res.statusText;
+    const err = new Error(typeof errMsg === "string" ? errMsg : "Request failed") as Error & { emailRegistered?: boolean };
+    err.emailRegistered = d?.emailRegistered;
+    throw err;
   }
 
   return data as T;
