@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 import { Header } from "./Header";
 import { ROUTES } from "@/constants";
 
-const HIDE_HEADER_PATHS = [ROUTES.LOGIN, ROUTES.SIGNUP, ROUTES.FORGOT_PASSWORD];
+const HIDE_HEADER_PATHS: string[] = [ROUTES.LOGIN, ROUTES.SIGNUP, ROUTES.FORGOT_PASSWORD];
 
 export function HeaderConditional() {
   const pathname = usePathname();

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { pool } from "@/lib/db";
 import { hashPassword, createSessionToken, sessionExpiresAt } from "@/lib/auth";
 import { runAuthMigration, isSchemaError } from "@/lib/migrate-auth";
-import type { RowDataPacket } from "mysql2";
+import type { RowDataPacket, ResultSetHeader } from "mysql2";
 
 type SignupBody = {
   email: string;
@@ -19,11 +19,11 @@ async function doSignup(body: SignupBody) {
     name?.trim() ||
     null;
   const password_hash = await hashPassword(password);
-  const [insertResult] = await pool.query<RowDataPacket>(
+  const [insertResult] = await pool.query<ResultSetHeader>(
     "INSERT INTO users (email, name, password_hash) VALUES (?, ?, ?)",
     [email.trim(), fullName, password_hash]
   );
-  const userId = (insertResult as { insertId?: number }).insertId;
+  const userId = insertResult.insertId;
   if (!userId) throw new Error("Failed to create user");
 
   const session_token = createSessionToken();

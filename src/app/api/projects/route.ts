@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { pool } from "@/lib/db";
 import { getCurrentUserId } from "@/lib/session";
-import type { RowDataPacket } from "mysql2";
+import type { RowDataPacket, ResultSetHeader } from "mysql2";
 
 export async function GET(request: Request) {
   try {
@@ -37,11 +37,11 @@ export async function POST(request: NextRequest) {
     const { name, description, status } = body as { name: string; description?: string; status?: string };
     if (!name?.trim()) return NextResponse.json({ error: "name required" }, { status: 400 });
 
-    const [result] = await pool.query<RowDataPacket>(
+    const [result] = await pool.query<ResultSetHeader>(
       "INSERT INTO projects (name, description, status, owner_id) VALUES (?, ?, ?, ?)",
       [name.trim(), description?.trim() || null, status || "on_track", userId]
     );
-    const id = (result as { insertId?: number }).insertId;
+    const id = result.insertId;
     if (!id) return NextResponse.json({ error: "Failed to create project" }, { status: 500 });
 
     await pool.query("INSERT INTO project_members (project_id, user_id, role) VALUES (?, ?, 'owner')", [id, userId]);

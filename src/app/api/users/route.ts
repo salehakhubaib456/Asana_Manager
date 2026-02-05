@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { pool } from "@/lib/db";
-import type { RowDataPacket } from "mysql2";
+import type { RowDataPacket, ResultSetHeader } from "mysql2";
 
 export async function GET() {
   try {
@@ -26,11 +26,11 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-    const [result] = await pool.query<RowDataPacket>(
+    const [result] = await pool.query<ResultSetHeader>(
       "INSERT INTO users (email, name) VALUES (?, ?)",
       [email.trim(), name?.trim() ?? null]
     );
-    const insertId = (result as { insertId?: number })?.insertId;
+    const insertId = result.insertId;
     const [rows] = await pool.query<RowDataPacket[]>(
       "SELECT id, email, name, avatar_url, created_at, updated_at FROM users WHERE id = ?",
       [insertId]

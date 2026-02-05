@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { pool } from "@/lib/db";
 import { createSessionToken, sessionExpiresAt } from "@/lib/auth";
-import type { RowDataPacket } from "mysql2";
+import type { RowDataPacket, ResultSetHeader } from "mysql2";
 
 async function getGoogleUser(access_token: string): Promise<{ email: string; name: string | null; picture: string | null }> {
   const res = await fetch("https://www.googleapis.com/oauth2/v2/userinfo", {
@@ -34,11 +34,11 @@ export async function POST(request: NextRequest) {
         [name, picture, userId]
       );
     } else {
-      const [insert] = await pool.query<RowDataPacket>(
+      const [insert] = await pool.query<ResultSetHeader>(
         "INSERT INTO users (email, name, avatar_url, password_hash) VALUES (?, ?, ?, NULL)",
         [email, name, picture]
       );
-      userId = (insert as { insertId?: number }).insertId!;
+      userId = insert.insertId;
     }
 
     const session_token = createSessionToken();

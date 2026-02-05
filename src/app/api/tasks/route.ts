@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { pool } from "@/lib/db";
 import { getCurrentUserId } from "@/lib/session";
-import type { RowDataPacket } from "mysql2";
+import type { RowDataPacket, ResultSetHeader } from "mysql2";
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "project_id, section_id, title required" }, { status: 400 });
     }
 
-    const [result] = await pool.query<RowDataPacket>(
+    const [result] = await pool.query<ResultSetHeader>(
       `INSERT INTO tasks (project_id, section_id, title, description, priority, status, assignee_id, due_date, start_date, position, task_type)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?)`,
       [
@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
         task_type || "software_dev",
       ]
     );
-    const id = (result as { insertId?: number }).insertId;
+    const id = result.insertId;
     if (!id) return NextResponse.json({ error: "Failed to create task" }, { status: 500 });
 
     const [rows] = await pool.query<RowDataPacket[]>(

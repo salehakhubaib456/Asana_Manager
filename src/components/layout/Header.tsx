@@ -7,7 +7,7 @@ import { useAuthStore } from "@/store";
 import { authService } from "@/services/authService";
 import { Button } from "@/components/ui";
 
-const AUTH_PATHS = [ROUTES.LOGIN, ROUTES.SIGNUP, ROUTES.FORGOT_PASSWORD];
+const AUTH_PATHS: string[] = [ROUTES.LOGIN, ROUTES.SIGNUP, ROUTES.FORGOT_PASSWORD];
 
 export function Header() {
   const router = useRouter();

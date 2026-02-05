@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { pool } from "@/lib/db";
 import { getCurrentUserId } from "@/lib/session";
-import type { RowDataPacket } from "mysql2";
+import type { RowDataPacket, ResultSetHeader } from "mysql2";
 
 export async function GET(
   request: Request,
@@ -43,11 +43,11 @@ export async function POST(
     if (!name?.trim()) return NextResponse.json({ error: "name required" }, { status: 400 });
 
     const pos = position ?? 0;
-    const [result] = await pool.query<RowDataPacket>(
+    const [result] = await pool.query<ResultSetHeader>(
       "INSERT INTO sections (project_id, name, position) VALUES (?, ?, ?)",
       [projectId, name.trim(), pos]
     );
-    const id = (result as { insertId?: number }).insertId;
+    const id = result.insertId;
     if (!id) return NextResponse.json({ error: "Failed to create section" }, { status: 500 });
 
     const [rows] = await pool.query<RowDataPacket[]>(
