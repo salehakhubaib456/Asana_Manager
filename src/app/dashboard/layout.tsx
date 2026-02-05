@@ -1,5 +1,3 @@
-"use client";
-
 import dynamic from "next/dynamic";
 
 const Sidebar = dynamic(() => import("@/components/layout").then(mod => ({ default: mod.Sidebar })), {

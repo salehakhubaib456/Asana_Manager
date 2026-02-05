@@ -10,17 +10,6 @@ const nextConfig = {
   experimental: {
     serverComponentsExternalPackages: ["mysql2"],
   },
-  // Fix for Vercel build issue with route groups
-  webpack: (config, { isServer }) => {
-    if (isServer) {
-      // Ensure proper handling of client reference manifests
-      config.resolve.fallback = {
-        ...config.resolve.fallback,
-        fs: false,
-      };
-    }
-    return config;
-  },
   generateBuildId: async () => {
     return `build-${Date.now()}`;
   },
