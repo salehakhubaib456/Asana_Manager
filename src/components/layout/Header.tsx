@@ -14,6 +14,7 @@ export function Header() {
   const pathname = usePathname();
   const { user, logout } = useAuthStore();
   const isAuthPage = AUTH_PATHS.includes(pathname);
+  const isLandingPage = pathname === ROUTES.HOME;
 
   async function handleLogout() {
     try {
@@ -31,7 +32,7 @@ export function Header() {
         Asanamanager
       </Link>
       <nav className="flex items-center gap-5">
-        {user ? (
+        {user && !isLandingPage ? (
           <>
             <Link href={ROUTES.DASHBOARD} className="text-sm font-medium text-slate-600 hover:text-violet-700 transition-colors">
               Dashboard
