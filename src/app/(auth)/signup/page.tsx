@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button, Input } from "@/components/ui";
@@ -8,6 +8,64 @@ import { ROUTES } from "@/constants";
 import { useAuthStore } from "@/store";
 import { authService } from "@/services/authService";
 import { GoogleButton } from "@/components/auth/GoogleButton";
+import { getPasswordChecks, getPasswordStrength, validatePassword, PASSWORD } from "@/lib/password";
+import { isValidEmail, INVALID_EMAIL_MESSAGE } from "@/lib/email";
+
+function PasswordStrengthMeter({ password }: { password: string }) {
+  const strength = getPasswordStrength(password);
+  const width =
+    strength === "weak" ? "33%" : strength === "medium" ? "66%" : "100%";
+  const color =
+    strength === "weak"
+      ? "bg-red-500"
+      : strength === "medium"
+        ? "bg-amber-500"
+        : "bg-emerald-500";
+  return (
+    <div className="space-y-1">
+      <div className="flex items-center gap-2">
+        <div className="h-1.5 flex-1 rounded-full bg-slate-200 overflow-hidden">
+          <div
+            className={`h-full rounded-full transition-all duration-300 ${color}`}
+            style={{ width }}
+          />
+        </div>
+        <span
+          className={`text-xs font-medium capitalize ${
+            strength === "weak"
+              ? "text-red-600"
+              : strength === "medium"
+                ? "text-amber-600"
+                : "text-emerald-600"
+          }`}
+        >
+          {strength}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function PasswordRequirements({ password }: { password: string }) {
+  const checks = useMemo(() => getPasswordChecks(password), [password]);
+  const items: { label: string; ok: boolean }[] = [
+    { label: `${PASSWORD.MIN_LENGTH}–${PASSWORD.MAX_LENGTH} characters`, ok: checks.length },
+    { label: "Uppercase + lowercase", ok: checks.uppercase && checks.lowercase },
+    { label: "Number", ok: checks.number },
+    { label: "Special character (!@#)", ok: checks.special },
+    { label: "Not a common password", ok: checks.notCommon },
+  ];
+  return (
+    <ul className="text-xs text-slate-600 space-y-0.5">
+      {items.map(({ label, ok }) => (
+        <li key={label} className={ok ? "text-emerald-600" : "text-slate-500"}>
+          {ok ? "✓ " : "○ "}
+          {label}
+        </li>
+      ))}
+    </ul>
+  );
+}
 
 export default function SignupPage() {
   const router = useRouter();
@@ -47,12 +105,18 @@ export default function SignupPage() {
     setError("");
     setSchemaError(false);
     setMigrationLog(null);
+    const trimmedEmail = email.trim();
+    if (!isValidEmail(trimmedEmail)) {
+      setError(INVALID_EMAIL_MESSAGE);
+      return;
+    }
     if (password !== confirmPassword) {
       setError("Passwords do not match");
       return;
     }
-    if (password.length < 6) {
-      setError("Password must be at least 6 characters");
+    const pwdValidation = validatePassword(password);
+    if (!pwdValidation.valid) {
+      setError(pwdValidation.error ?? "Invalid password");
       return;
     }
     setLoading(true);
@@ -61,7 +125,7 @@ export default function SignupPage() {
       const firstName = parts[0] ?? "";
       const lastName = parts.slice(1).join(" ") ?? "";
       const res = await authService.signup({
-        email,
+        email: trimmedEmail,
         password,
         firstName: firstName || undefined,
         lastName: lastName || undefined,
@@ -111,9 +175,16 @@ export default function SignupPage() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
-          minLength={6}
+          minLength={PASSWORD.MIN_LENGTH}
+          maxLength={PASSWORD.MAX_LENGTH}
           className="rounded-xl bg-white/90 border-white/80 shadow-sm"
         />
+        {password && (
+          <>
+            <PasswordStrengthMeter password={password} />
+            <PasswordRequirements password={password} />
+          </>
+        )}
         <Input
           label="Confirm Password"
           type="password"
@@ -121,7 +192,8 @@ export default function SignupPage() {
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
           required
-          minLength={6}
+          minLength={PASSWORD.MIN_LENGTH}
+          maxLength={PASSWORD.MAX_LENGTH}
           className="rounded-xl bg-white/90 border-white/80 shadow-sm"
         />
         {error && (

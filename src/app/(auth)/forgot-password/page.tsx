@@ -1,12 +1,70 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
 import { Button, Input } from "@/components/ui";
 import { ROUTES } from "@/constants";
 import { authService } from "@/services/authService";
+import { getPasswordChecks, getPasswordStrength, validatePassword, PASSWORD } from "@/lib/password";
+import { isValidEmail, INVALID_EMAIL_MESSAGE } from "@/lib/email";
 
 type Step = "email" | "otp" | "password";
+
+function PasswordStrengthMeter({ password }: { password: string }) {
+  const strength = getPasswordStrength(password);
+  const width =
+    strength === "weak" ? "33%" : strength === "medium" ? "66%" : "100%";
+  const color =
+    strength === "weak"
+      ? "bg-red-500"
+      : strength === "medium"
+        ? "bg-amber-500"
+        : "bg-emerald-500";
+  return (
+    <div className="space-y-1">
+      <div className="flex items-center gap-2">
+        <div className="h-1.5 flex-1 rounded-full bg-slate-200 overflow-hidden">
+          <div
+            className={`h-full rounded-full transition-all duration-300 ${color}`}
+            style={{ width }}
+          />
+        </div>
+        <span
+          className={`text-xs font-medium capitalize ${
+            strength === "weak"
+              ? "text-red-600"
+              : strength === "medium"
+                ? "text-amber-600"
+                : "text-emerald-600"
+          }`}
+        >
+          {strength}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function PasswordRequirements({ password }: { password: string }) {
+  const checks = useMemo(() => getPasswordChecks(password), [password]);
+  const items: { label: string; ok: boolean }[] = [
+    { label: `${PASSWORD.MIN_LENGTH}–${PASSWORD.MAX_LENGTH} characters`, ok: checks.length },
+    { label: "Uppercase + lowercase", ok: checks.uppercase && checks.lowercase },
+    { label: "Number", ok: checks.number },
+    { label: "Special character (!@#)", ok: checks.special },
+    { label: "Not a common password", ok: checks.notCommon },
+  ];
+  return (
+    <ul className="text-xs text-slate-600 space-y-0.5">
+      {items.map(({ label, ok }) => (
+        <li key={label} className={ok ? "text-emerald-600" : "text-slate-500"}>
+          {ok ? "✓ " : "○ "}
+          {label}
+        </li>
+      ))}
+    </ul>
+  );
+}
 
 export default function ForgotPasswordPage() {
   const [step, setStep] = useState<Step>("email");
@@ -22,9 +80,14 @@ export default function ForgotPasswordPage() {
     e.preventDefault();
     setError("");
     setMessage("");
+    const trimmedEmail = email.trim();
+    if (!isValidEmail(trimmedEmail)) {
+      setError(INVALID_EMAIL_MESSAGE);
+      return;
+    }
     setLoading(true);
     try {
-      const res = await authService.forgotPassword({ email: email.trim() });
+      const res = await authService.forgotPassword({ email: trimmedEmail });
       setMessage(res.message ?? "OTP sent to your email. Check your inbox (e.g. Gmail) and paste it below.");
       setStep("otp");
     } catch (err) {
@@ -57,8 +120,9 @@ export default function ForgotPasswordPage() {
       setError("Passwords do not match");
       return;
     }
-    if (newPassword.length < 6) {
-      setError("Password must be at least 6 characters");
+    const pwdValidation = validatePassword(newPassword);
+    if (!pwdValidation.valid) {
+      setError(pwdValidation.error ?? "Invalid password");
       return;
     }
     setLoading(true);
@@ -157,9 +221,16 @@ export default function ForgotPasswordPage() {
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
             required
-            minLength={6}
+            minLength={PASSWORD.MIN_LENGTH}
+            maxLength={PASSWORD.MAX_LENGTH}
             className="rounded-xl bg-white/90 border-white/80 shadow-sm"
           />
+          {newPassword && (
+            <>
+              <PasswordStrengthMeter password={newPassword} />
+              <PasswordRequirements password={newPassword} />
+            </>
+          )}
           <Input
             label="Confirm new password"
             type="password"
@@ -167,7 +238,8 @@ export default function ForgotPasswordPage() {
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             required
-            minLength={6}
+            minLength={PASSWORD.MIN_LENGTH}
+            maxLength={PASSWORD.MAX_LENGTH}
             className="rounded-xl bg-white/90 border-white/80 shadow-sm"
           />
           {message && (

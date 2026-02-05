@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { pool } from "@/lib/db";
 import { hashPassword, createSessionToken, sessionExpiresAt } from "@/lib/auth";
 import { runAuthMigration, isSchemaError } from "@/lib/migrate-auth";
+import { validatePassword } from "@/lib/password";
+import { isValidEmail, INVALID_EMAIL_MESSAGE } from "@/lib/email";
 import type { RowDataPacket, ResultSetHeader } from "mysql2";
 
 type SignupBody = {
@@ -54,15 +56,43 @@ export async function POST(request: NextRequest) {
   try {
     const body = (await request.json()) as SignupBody;
     const { email, password } = body;
-    if (!email?.trim() || !password) {
+    const trimmedEmail = email?.trim();
+    if (!trimmedEmail || !password) {
       return NextResponse.json(
         { error: "Email and password required" },
         { status: 400 }
       );
     }
+    if (!isValidEmail(trimmedEmail)) {
+      return NextResponse.json(
+        { error: INVALID_EMAIL_MESSAGE },
+        { status: 400 }
+      );
+    }
+
+    const pwdValidation = validatePassword(password);
+    if (!pwdValidation.valid) {
+      return NextResponse.json(
+        { error: pwdValidation.error ?? "Invalid password" },
+        { status: 400 }
+      );
+    }
+
+    const [existing] = await pool.query<RowDataPacket[]>(
+      "SELECT id FROM users WHERE email = ?",
+      [trimmedEmail]
+    );
+    if (existing && existing.length > 0) {
+      return NextResponse.json(
+        { error: "Email already registered" },
+        { status: 400 }
+      );
+    }
+
+    const bodyWithEmail = { ...body, email: trimmedEmail };
 
     try {
-      const result = await doSignup(body);
+      const result = await doSignup(bodyWithEmail);
       return NextResponse.json(result);
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : String(e);
@@ -76,7 +106,7 @@ export async function POST(request: NextRequest) {
         const migration = await runAuthMigration();
         if (migration.ok) {
           try {
-            const result = await doSignup(body);
+            const result = await doSignup(bodyWithEmail);
             return NextResponse.json(result);
           } catch (retryErr: unknown) {
             const retryMsg =

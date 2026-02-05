@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { pool } from "@/lib/db";
 import { verifyPassword, createSessionToken, sessionExpiresAt } from "@/lib/auth";
 import { runAuthMigration, isSchemaError } from "@/lib/migrate-auth";
+import { isValidEmail, INVALID_EMAIL_MESSAGE } from "@/lib/email";
 import type { RowDataPacket } from "mysql2";
 
 async function doLogin(email: string, password: string) {
@@ -38,19 +39,23 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { email, password } = body as { email: string; password: string };
-    if (!email?.trim() || !password) {
+    const trimmed = email?.trim();
+    if (!trimmed || !password) {
       return NextResponse.json({ error: "Email and password required" }, { status: 400 });
+    }
+    if (!isValidEmail(trimmed)) {
+      return NextResponse.json({ error: INVALID_EMAIL_MESSAGE }, { status: 400 });
     }
 
     try {
-      return await doLogin(email, password);
+      return await doLogin(trimmed, password);
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : String(e);
       if (isSchemaError(msg)) {
         const migration = await runAuthMigration();
         if (migration.ok) {
           try {
-            return await doLogin(email, password);
+            return await doLogin(trimmed, password);
           } catch (retryErr: unknown) {
             const retryMsg = retryErr instanceof Error ? retryErr.message : String(retryErr);
             return NextResponse.json(

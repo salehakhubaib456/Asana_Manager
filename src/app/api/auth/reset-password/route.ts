@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { pool } from "@/lib/db";
 import { hashPassword } from "@/lib/auth";
+import { validatePassword } from "@/lib/password";
 import type { RowDataPacket } from "mysql2";
 
 export async function POST(request: NextRequest) {
@@ -9,6 +10,13 @@ export async function POST(request: NextRequest) {
     const { email, otp, newPassword } = body as { email?: string; otp?: string; newPassword?: string };
     if (!email?.trim() || !otp?.trim() || !newPassword) {
       return NextResponse.json({ error: "Email, OTP and new password required" }, { status: 400 });
+    }
+    const pwdValidation = validatePassword(newPassword);
+    if (!pwdValidation.valid) {
+      return NextResponse.json(
+        { error: pwdValidation.error ?? "Invalid password" },
+        { status: 400 }
+      );
     }
     const [users] = await pool.query<RowDataPacket[]>("SELECT id FROM users WHERE email = ?", [email.trim()]);
     const user = users[0];

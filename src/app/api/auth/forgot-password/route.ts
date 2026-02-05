@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
 import { pool } from "@/lib/db";
+import { isValidEmail, INVALID_EMAIL_MESSAGE } from "@/lib/email";
 import type { RowDataPacket } from "mysql2";
 
 const OTP_EXPIRE_MINUTES = 10;
@@ -30,10 +31,14 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { email } = body as { email?: string };
-    if (!email?.trim()) {
+    const trimmed = email?.trim();
+    if (!trimmed) {
       return NextResponse.json({ error: "Email required" }, { status: 400 });
     }
-    const [users] = await pool.query<RowDataPacket[]>("SELECT id FROM users WHERE email = ?", [email.trim()]);
+    if (!isValidEmail(trimmed)) {
+      return NextResponse.json({ error: INVALID_EMAIL_MESSAGE }, { status: 400 });
+    }
+    const [users] = await pool.query<RowDataPacket[]>("SELECT id FROM users WHERE email = ?", [trimmed]);
     const user = users[0];
     if (!user) {
       return NextResponse.json({ message: "If this email exists, we sent an OTP." });
@@ -45,7 +50,7 @@ export async function POST(request: NextRequest) {
       "INSERT INTO password_resets (user_id, token, expires_at) VALUES (?, ?, ?)",
       [user.id, otp, expiresAt]
     );
-    const sent = await sendOTPEmail(email.trim(), otp);
+    const sent = await sendOTPEmail(trimmed, otp);
     if (!sent) {
       return NextResponse.json(
         { error: "Email service is not configured. Set RESEND_API_KEY to send OTP to your inbox." },

@@ -8,6 +8,7 @@ import { ROUTES } from "@/constants";
 import { useAuthStore } from "@/store";
 import { authService } from "@/services/authService";
 import { GoogleButton } from "@/components/auth/GoogleButton";
+import { isValidEmail, INVALID_EMAIL_MESSAGE } from "@/lib/email";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -22,9 +23,14 @@ export default function LoginPage() {
     e.preventDefault();
     setError("");
     setShowNewUserPrompt(false);
+    const trimmedEmail = email.trim();
+    if (!isValidEmail(trimmedEmail)) {
+      setError(INVALID_EMAIL_MESSAGE);
+      return;
+    }
     setLoading(true);
     try {
-      const res = await authService.login({ email, password });
+      const res = await authService.login({ email: trimmedEmail, password });
       authService.persistToken(res.token);
       authService.persistUser(res.user);
       setAuth(res.user, res.token);
