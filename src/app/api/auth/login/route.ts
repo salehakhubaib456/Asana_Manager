@@ -7,7 +7,7 @@ import type { RowDataPacket } from "mysql2";
 
 async function doLogin(email: string, password: string) {
   const [rows] = await pool.query<RowDataPacket[]>(
-    "SELECT id, email, name, avatar_url, password_hash, created_at, updated_at FROM users WHERE email = ?",
+    "SELECT id, email, name, avatar_url, password_hash, created_at, updated_at, onboarding_completed_at, workspace_name, onboarding_use_case, onboarding_manage_types FROM users WHERE email = ?",
     [email.trim()]
   );
   const row = rows[0];
@@ -31,6 +31,10 @@ async function doLogin(email: string, password: string) {
     avatar_url: row.avatar_url,
     created_at: row.created_at?.toString(),
     updated_at: row.updated_at?.toString(),
+    onboarding_completed_at: row.onboarding_completed_at?.toString() ?? null,
+    workspace_name: row.workspace_name ?? null,
+    onboarding_use_case: row.onboarding_use_case ?? null,
+    onboarding_manage_types: row.onboarding_manage_types ?? null,
   };
   return NextResponse.json({ user, token: session_token });
 }

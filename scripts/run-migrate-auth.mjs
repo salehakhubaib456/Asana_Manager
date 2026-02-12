@@ -1,52 +1,12 @@
 /**
  * Migration: add password_hash & avatar_url to users, ensure user_sessions exists.
  * Run if signup fails with "Unknown column 'password_hash'" or "user_sessions doesn't exist".
- * Safe to run multiple times (ignores "Duplicate column" / "Duplicate key").
+ * Safe to run multiple times (ignores "Duplicate column" / "Duplicate key"). Uses retry on "Too many connections".
  */
 
-import mysql from "mysql2/promise";
-import { readFileSync, existsSync } from "fs";
-import { join } from "path";
+import { createConnectionWithRetry } from "./lib-migrate-db.mjs";
 
-const envPath = join(process.cwd(), ".env");
-if (!existsSync(envPath)) {
-  console.error("ERROR: .env not found at", envPath);
-  process.exit(1);
-}
-const raw = readFileSync(envPath, "utf8").replace(/^\uFEFF/, "");
-for (const line of raw.split(/\r?\n/)) {
-  const m = line.match(/^([^#=]+)=(.*)$/);
-  if (m) {
-    const key = m[1].trim().replace(/^\uFEFF/, "");
-    const val = m[2].trim().replace(/^["']|["']$/g, "");
-    process.env[key] = val;
-  }
-}
-
-const url = process.env.DATABASE_URL;
-if (!url) {
-  console.error("ERROR: DATABASE_URL not set in .env");
-  process.exit(1);
-}
-
-const match = url.match(/^mysql:\/\/([^:]+):([^@]+)@([^:]+):(\d+)\/([^?]+)(\?.*)?$/);
-if (!match) {
-  console.error("ERROR: Invalid DATABASE_URL format");
-  process.exit(1);
-}
-
-const [, user, password, host, port, database] = match;
-const needsSsl = url.includes("ssl-mode=REQUIRED") || url.includes("aivencloud.com");
-
-const connection = await mysql.createConnection({
-  host,
-  port: Number(port),
-  user: decodeURIComponent(user),
-  password: decodeURIComponent(password),
-  database: database.split("?")[0],
-  multipleStatements: true,
-  ...(needsSsl && { ssl: { rejectUnauthorized: false } }),
-});
+const connection = await createConnectionWithRetry(5, 3000);
 
 async function run(sql, label) {
   try {

@@ -7,7 +7,7 @@ import { useAuthStore } from "@/store";
 import { authService } from "@/services/authService";
 import { Button } from "@/components/ui";
 
-const AUTH_PATHS: string[] = [ROUTES.LOGIN, ROUTES.SIGNUP, ROUTES.FORGOT_PASSWORD];
+const AUTH_PATHS: string[] = [ROUTES.LOGIN, ROUTES.SIGNUP, ROUTES.FORGOT_PASSWORD, ROUTES.RESET_PASSWORD];
 
 export function Header() {
   const router = useRouter();
@@ -26,19 +26,35 @@ export function Header() {
     }
   }
 
+  // Violet navbar only in app area (dashboard + sidebar). Landing / login / signup / forgot-password stay original.
+  const isAppArea = user && !isLandingPage && !isAuthPage;
+
   return (
-    <header className="h-16 border-b border-white/30 bg-white/50 backdrop-blur-md flex items-center justify-between px-6 shadow-sm">
-      <Link href={ROUTES.HOME} className="text-xl font-bold tracking-tight text-slate-800 hover:text-violet-700 transition-colors">
+    <header
+      className={
+        isAppArea
+          ? "h-14 border-b border-violet-700/30 bg-violet-600 flex items-center justify-between px-6 shadow-md"
+          : "h-16 border-b border-white/30 bg-white/50 backdrop-blur-md flex items-center justify-between px-6 shadow-sm"
+      }
+    >
+      <Link
+        href={ROUTES.HOME}
+        className={
+          isAppArea
+            ? "text-xl font-bold tracking-tight text-white hover:text-violet-100 transition-colors"
+            : "text-xl font-bold tracking-tight text-slate-800 hover:text-violet-700 transition-colors"
+        }
+      >
         Asanamanager
       </Link>
       <nav className="flex items-center gap-5">
         {user && !isLandingPage && !isAuthPage ? (
           <>
-            <Link href={ROUTES.DASHBOARD} className="text-sm font-medium text-slate-600 hover:text-violet-700 transition-colors">
+            <Link href={ROUTES.DASHBOARD} className="text-sm font-medium text-white/90 hover:text-white transition-colors">
               Dashboard
             </Link>
-            <span className="text-sm text-slate-500 max-w-[160px] truncate">{user.email}</span>
-            <Button variant="ghost" size="sm" onClick={handleLogout} className="text-slate-600 hover:text-slate-900 hover:bg-white/60 rounded-lg">
+            <span className="text-sm text-white/70 max-w-[160px] truncate">{user.email}</span>
+            <Button variant="ghost" size="sm" onClick={handleLogout} className="text-white/90 hover:text-white hover:bg-violet-500 rounded-lg">
               Logout
             </Button>
           </>

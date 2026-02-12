@@ -1,7 +1,24 @@
 import { NextResponse } from "next/server";
-import { pool } from "@/lib/db";
+import { pool, executeQuery } from "@/lib/db";
 import { getCurrentUserId } from "@/lib/session";
+import { hasProjectAccess } from "@/lib/permissions";
 import type { RowDataPacket } from "mysql2";
+
+async function handleDbError(error: unknown, defaultMessage: string) {
+  if (error instanceof Error) {
+    if (error.message.includes("Too many connections")) {
+      return NextResponse.json(
+        { error: "Database connection limit reached. Please try again in a moment." },
+        { status: 503 }
+      );
+    }
+    return NextResponse.json(
+      { error: defaultMessage, details: error.message },
+      { status: 500 }
+    );
+  }
+  return NextResponse.json({ error: defaultMessage }, { status: 500 });
+}
 
 export async function GET(
   request: Request,
@@ -13,7 +30,12 @@ export async function GET(
     const projectId = Number((await params).id);
     if (!projectId) return NextResponse.json({ error: "Invalid id" }, { status: 400 });
 
-    const [rows] = await pool.query<RowDataPacket[]>(
+    const hasAccess = await hasProjectAccess(userId, projectId);
+    if (!hasAccess) {
+      return NextResponse.json({ error: "Access denied" }, { status: 403 });
+    }
+
+    const [rows] = await executeQuery<RowDataPacket[]>(
       `SELECT t.id, t.project_id, t.section_id, t.title, t.description, t.priority, t.status, t.assignee_id, t.due_date, t.start_date, t.position, t.task_type, t.created_at, t.updated_at, t.deleted_at
        FROM tasks t
        WHERE t.project_id = ? AND t.deleted_at IS NULL
@@ -30,6 +52,6 @@ export async function GET(
     }));
     return NextResponse.json(list);
   } catch (e) {
-    return NextResponse.json({ error: "Failed to list tasks", details: String(e) }, { status: 500 });
+    return handleDbError(e, "Failed to list tasks");
   }
 }

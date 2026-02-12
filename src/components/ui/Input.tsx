@@ -39,14 +39,14 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           <input
             ref={ref}
             type={inputType}
-            className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none pr-10 ${error ? "border-red-500" : "border-gray-300"} ${className}`}
+            className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-violet-500 outline-none pr-10 bg-white/80 backdrop-blur-sm ${error ? "border-red-500" : "border-white/50"} ${className}`}
             {...props}
           />
           {isPassword && (
             <button
               type="button"
               onClick={() => setVisible((v) => !v)}
-              className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded text-slate-500 hover:text-slate-700 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-0"
+              className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded text-slate-500 hover:text-violet-700 hover:bg-violet-50 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-0"
               tabIndex={-1}
               aria-label={visible ? "Hide password" : "Show password"}
             >

@@ -7,8 +7,23 @@ import type { ApiError } from "@/types";
 
 const getToken = (): string | null => {
   if (typeof window === "undefined") return null;
-  return sessionStorage.getItem(STORAGE_KEYS.TOKEN);
+  let token = localStorage.getItem(STORAGE_KEYS.TOKEN);
+  if (!token) {
+    token = sessionStorage.getItem(STORAGE_KEYS.TOKEN);
+    if (token) {
+      localStorage.setItem(STORAGE_KEYS.TOKEN, token);
+      sessionStorage.removeItem(STORAGE_KEYS.TOKEN);
+    }
+  }
+  return token;
 };
+
+/** Use for raw fetch() calls so auth is sent (e.g. FormData uploads). */
+export function getAuthHeaders(): Record<string, string> {
+  const token = getToken();
+  if (!token) return {};
+  return { Authorization: `Bearer ${token}` };
+}
 
 export async function api<T>(
   path: string,

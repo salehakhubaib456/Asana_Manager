@@ -14,7 +14,7 @@ export function Card({
     padding === "none" ? "" : padding === "sm" ? "p-4" : "p-6";
   return (
     <div
-      className={`bg-white rounded-lg border border-gray-200 shadow-sm ${paddingClass} ${className}`}
+      className={`bg-white/60 backdrop-blur-md rounded-xl border border-white/50 shadow-lg ${paddingClass} ${className}`}
       {...props}
     >
       {children}

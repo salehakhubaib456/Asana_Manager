@@ -147,7 +147,7 @@ CREATE TABLE IF NOT EXISTS tasks (
   due_date DATE NULL,
   start_date DATE NULL,
   position INT NOT NULL DEFAULT 0,
-  task_type ENUM('software_dev', 'dataset', 'video_processing', 'sports_coaching', 'research_docs') DEFAULT 'software_dev',
+  task_type ENUM('task', 'milestone', 'form_response', 'meeting_note', 'software_dev', 'dataset', 'video_processing', 'sports_coaching', 'research_docs') DEFAULT 'task',
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   deleted_at DATETIME NULL COMMENT 'Soft delete; NULL = active',

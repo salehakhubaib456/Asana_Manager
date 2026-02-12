@@ -10,7 +10,13 @@
     "lint": "next lint",
     "db:init": "node scripts/init-and-test-db.mjs",
     "db:schema": "node scripts/run-schema-pm.mjs",
-    "db:migrate-auth": "node scripts/run-migrate-auth.mjs"
+    "db:migrate-auth": "node scripts/run-migrate-auth.mjs",
+    "db:migrate-sharing": "node scripts/run-migrate-sharing.mjs",
+    "db:migrate-dashboards": "node scripts/run-migrate-dashboards.mjs",
+    "db:migrate-onboarding": "node scripts/run-migrate-onboarding.mjs",
+    "db:migrate-folders": "node scripts/run-migrate-folders.mjs",
+    "db:migrate-spaces": "node scripts/run-migrate-spaces.mjs",
+    "db:migrate-invitations": "node scripts/run-migrate-invitations.mjs"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

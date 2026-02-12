@@ -14,6 +14,26 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "project_id, section_id, title required" }, { status: 400 });
     }
 
+    // Format dates to YYYY-MM-DD or null
+    const formatDate = (date: unknown): string | null => {
+      if (!date || date === "" || date === null) return null;
+      if (typeof date === "string") {
+        // If already in YYYY-MM-DD format, return as is
+        if (/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+          return date;
+        }
+        // Try to parse and format
+        try {
+          const d = new Date(date);
+          if (isNaN(d.getTime())) return null;
+          return d.toISOString().split("T")[0];
+        } catch {
+          return null;
+        }
+      }
+      return null;
+    };
+
     const [result] = await pool.query<ResultSetHeader>(
       `INSERT INTO tasks (project_id, section_id, title, description, priority, status, assignee_id, due_date, start_date, position, task_type)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?)`,
@@ -25,9 +45,9 @@ export async function POST(request: NextRequest) {
         priority || "medium",
         status || "on_track",
         assignee_id ? Number(assignee_id) : null,
-        due_date ? String(due_date) : null,
-        start_date ? String(start_date) : null,
-        task_type || "software_dev",
+        formatDate(due_date),
+        formatDate(start_date),
+        task_type || "task",
       ]
     );
     const id = result.insertId;

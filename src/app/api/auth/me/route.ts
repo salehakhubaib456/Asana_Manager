@@ -16,7 +16,7 @@ export async function GET(request: Request) {
     if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const [users] = await pool.query<RowDataPacket[]>(
-      "SELECT id, email, name, avatar_url, created_at, updated_at FROM users WHERE id = ?",
+      "SELECT id, email, name, avatar_url, created_at, updated_at, onboarding_completed_at, workspace_name, onboarding_use_case, onboarding_manage_types FROM users WHERE id = ?",
       [session.user_id]
     );
     const row = users[0];
@@ -29,6 +29,10 @@ export async function GET(request: Request) {
       avatar_url: row.avatar_url,
       created_at: row.created_at?.toString(),
       updated_at: row.updated_at?.toString(),
+      onboarding_completed_at: row.onboarding_completed_at?.toString() ?? null,
+      workspace_name: row.workspace_name ?? null,
+      onboarding_use_case: row.onboarding_use_case ?? null,
+      onboarding_manage_types: row.onboarding_manage_types ?? null,
     };
     return NextResponse.json(user);
   } catch (e) {

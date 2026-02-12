@@ -12,8 +12,18 @@ export function useAuthHydrate() {
   const { setAuth, setHydrated, token, user } = useAuthStore();
 
   useEffect(() => {
-    const stored = typeof window !== "undefined" ? sessionStorage.getItem(STORAGE_KEYS.TOKEN) : null;
-    const storedUser = typeof window !== "undefined" ? sessionStorage.getItem(STORAGE_KEYS.USER) : null;
+    if (typeof window === "undefined") {
+      setHydrated();
+      return;
+    }
+    let stored = localStorage.getItem(STORAGE_KEYS.TOKEN);
+    let storedUser = localStorage.getItem(STORAGE_KEYS.USER);
+    if (!stored && sessionStorage.getItem(STORAGE_KEYS.TOKEN)) {
+      stored = sessionStorage.getItem(STORAGE_KEYS.TOKEN);
+      storedUser = sessionStorage.getItem(STORAGE_KEYS.USER);
+      if (stored) localStorage.setItem(STORAGE_KEYS.TOKEN, stored);
+      if (storedUser) localStorage.setItem(STORAGE_KEYS.USER, storedUser);
+    }
     if (stored && storedUser) {
       try {
         setAuth(JSON.parse(storedUser), stored);

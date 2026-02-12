@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button, Input } from "@/components/ui";
 import { ROUTES } from "@/constants";
 import { useAuthStore } from "@/store";
@@ -12,6 +12,8 @@ import { isValidEmail, INVALID_EMAIL_MESSAGE } from "@/lib/email";
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const returnUrl = searchParams.get("returnUrl");
   const { setAuth } = useAuthStore();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -34,7 +36,8 @@ export default function LoginPage() {
       authService.persistToken(res.token);
       authService.persistUser(res.user);
       setAuth(res.user, res.token);
-      router.push(ROUTES.DASHBOARD);
+      const redirect = returnUrl && returnUrl.startsWith("/") ? returnUrl : ROUTES.DASHBOARD;
+      router.push(redirect);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Login failed";
       setError(message);
